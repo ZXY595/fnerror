@@ -1,0 +1,31 @@
+[package]
+name = "fnerror"
+version = "0.1.0"
+authors = ["ZXY595 <3303057136@qq.com>"]
+edition = "2024"
+description = "A proc-macro for generating error impls for functions."
+repository = "https://github.com/ZXY595/fnerror"
+license = "MIT"
+keywords = ["error", "error-handling", "function", "proc-macro"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+Inflector = { version = "0.11", default-features = false }
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", default-features = false, features = [
+  "clone-impls",
+  "full",
+  "parsing",
+  "printing",
+  "proc-macro",
+  "visit-mut",
+] }
+
+[features]
+# use thiserror to generate error impls
+default = ["thiserror"]
+thiserror = []
+
