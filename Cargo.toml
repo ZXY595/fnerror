@@ -9,6 +9,7 @@ license = "MIT"
 keywords = ["error", "error-handling", "function", "proc-macro"]
 
 [lib]
+doc = true
 proc-macro = true
 
 [dependencies]
