@@ -45,7 +45,7 @@ Which expands to (with thiserror feature):
 pub enum FooError {
     #[error("{}", 0usize)]
     Error2(String),
-    #[error("{}, {}",0usize 1usize)]
+    #[error("{}, {}",0usize, 1usize)]
     Error3(&'static str, u8),
 }
 fn foo() -> ::std::result::Result<(), FooError> {
@@ -58,7 +58,8 @@ fn foo() -> ::std::result::Result<(), FooError> {
 # Status
 - [x] Parse AST to generate error types.
 - [x] Generate error implementations using thiserror crate.
-- [ ] Support generic error types.
+- [x] Support generic error types (experimental).
+- [x] Support custom error name.
+- [ ] Replace panics with errors.
 - [ ] Support other error implementations.
-- [ ] Support custom error name.
 - [ ] Support more formatting options.

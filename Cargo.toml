@@ -21,6 +21,7 @@ syn = { version = "2.0", default-features = false, features = [
   "parsing",
   "printing",
   "proc-macro",
+  "visit",
   "visit-mut",
 ] }
 
