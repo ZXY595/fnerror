@@ -1,6 +1,6 @@
 [package]
 name = "fnerror"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["ZXY595 <3303057136@qq.com>"]
 edition = "2024"
 description = "A proc-macro for generating error impls for functions."

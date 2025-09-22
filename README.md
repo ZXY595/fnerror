@@ -17,7 +17,9 @@ cargo add thiserror
 # Example
 ```rust
 #[fnerror]
-fn foo() -> Result<()> {
+fn foo() -> Result<(), MyError> /* or Result<T> to use the default ident of error type ,
+which is pascal case of the function name + "Error", like `FooError` */
+{
     bar().map_err(|e| {
         #[fnerr]
         Error2("{}", e as String)
@@ -41,17 +43,17 @@ fn baz() -> Result<(), &'static str> {
 Which expands to (with thiserror feature):
 
 ```rust
+fn foo() -> ::std::result::Result<(), MyError> {
+    bar().map_err(|e| MyError::Error2(e))?;
+    baz().map_err(|e| MyError::Error3(e, 123))?;
+    Ok(())
+}
 #[derive(Debug, ::thiserror::Error)]
-pub enum FooError {
+pub enum MyError {
     #[error("{}", 0usize)]
     Error2(String),
     #[error("{}, {}",0usize, 1usize)]
     Error3(&'static str, u8),
-}
-fn foo() -> ::std::result::Result<(), FooError> {
-    bar().map_err(|e| FooError::Error2(e))?;
-    baz().map_err(|e| FooError::Error3(e, 123))?;
-    Ok(())
 }
 ```
 
@@ -60,6 +62,6 @@ fn foo() -> ::std::result::Result<(), FooError> {
 - [x] Generate error implementations using thiserror crate.
 - [x] Support generic error types (experimental).
 - [x] Support custom error name.
-- [ ] Replace panics with errors.
+- [x] Replace panics with errors.
 - [ ] Support other error implementations.
 - [ ] Support more formatting options.
