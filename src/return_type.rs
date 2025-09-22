@@ -53,9 +53,8 @@ impl ToTokens for Printer<&ReturnType, &GenericErrType> {
         return_type.ident.to_tokens(tokens);
         return_type.lt_token.to_tokens(tokens);
         return_type.ok_type.to_tokens(tokens);
-        return_type.comma.to_tokens(tokens);
+        return_type.comma.unwrap_or_default().to_tokens(tokens);
         self.meta.to_tokens(tokens);
         return_type.gt_token.to_tokens(tokens);
     }
 }
-
