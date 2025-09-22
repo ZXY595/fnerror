@@ -1,52 +1,61 @@
-use syn::{
-    AngleBracketedGenericArguments, GenericArgument, Path, PathArguments, PathSegment, ReturnType,
-    Token, Type, TypePath, punctuated::Punctuated,
-};
+use quote::{ToTokens, quote};
+use syn::{Error, GenericArgument, Ident, Token, Type, parse::Parse};
 
-use crate::utils;
+use crate::Printer;
 
-pub fn parse_return_type(error_path: Path, return_ty: &mut ReturnType) {
-    if let ReturnType::Type(_, ty) = return_ty
-        && let Type::Path(TypePath {
-            path: Path {
-                leading_colon,
-                segments,
-            },
-            ..
-        }) = ty.as_mut()
-    {
-        *leading_colon = Some(Default::default());
+pub struct ReturnType {
+    pub arrow: Token![->],
+    pub ident: Ident,
+    pub lt_token: Token![<],
+    pub ok_type: Type,
+    pub comma: Option<Token![,]>,
+    pub err_type: Option<Ident>,
+    pub gt_token: Token![>],
+}
 
-        let segment = segments
-            .first_mut()
-            .filter(|segment| segment.ident == "Result")
-            .expect("expect `Result<T>`");
-
-        if let PathArguments::AngleBracketed(AngleBracketedGenericArguments { args, .. }) =
-            &mut segment.arguments
-        {
-            if args.len() != 1 {
-                panic!("expect `Result<T>`, fnerror will generate a error for this");
-            }
-            args.push(GenericArgument::Type(Type::Path(TypePath {
-                qself: None,
-                path: error_path,
-            })));
-        }
-
-        let mut new_segments = Punctuated::<_, Token![::]>::new();
-
-        new_segments.push(PathSegment {
-            ident: utils::call_site_ident("std"),
-            arguments: Default::default(),
-        });
-        new_segments.push(PathSegment {
-            ident: utils::call_site_ident("result"),
-            arguments: Default::default(),
-        });
-
-        new_segments.push(segment.clone());
-
-        *segments = new_segments;
+impl Parse for ReturnType {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            arrow: input.parse()?,
+            ident: input.parse().and_then(|ident| {
+                (ident == "Result")
+                    .then_some(ident)
+                    .ok_or(Error::new(input.span(), "expect Result"))
+            })?,
+            lt_token: input.parse()?,
+            ok_type: input.parse()?,
+            comma: input.parse()?,
+            err_type: input.parse()?,
+            gt_token: input.parse()?,
+        })
     }
 }
+
+pub struct GenericErrType {
+    pub ident: Ident,
+    pub generics: Vec<GenericArgument>,
+}
+
+impl ToTokens for GenericErrType {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let ident = &self.ident;
+        let generics = &self.generics;
+        tokens.extend(quote! {
+            #ident<#(#generics),*>
+        })
+    }
+}
+
+impl ToTokens for Printer<&ReturnType, &GenericErrType> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let return_type = &self.inner;
+        return_type.arrow.to_tokens(tokens);
+        return_type.ident.to_tokens(tokens);
+        return_type.lt_token.to_tokens(tokens);
+        return_type.ok_type.to_tokens(tokens);
+        return_type.comma.to_tokens(tokens);
+        self.meta.to_tokens(tokens);
+        return_type.gt_token.to_tokens(tokens);
+    }
+}
+
